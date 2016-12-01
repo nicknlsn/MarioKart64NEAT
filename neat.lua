@@ -782,11 +782,16 @@ function get_objects()
 		if object.t > 0.6 and object.t < 0.8 then
 			object.t = 0.7
 		end
+		if object.t > 1.8 and object.t < 2 then
+			object.t = 1.9
+		end
 
 		-- make bad objects a negative value
 		if object.t == 2.6 or object.t == 1.3 or
 			object.t == 0.8 or object.t == 0.7 or
-			object.t == 0.6 then
+			object.t == 0.6 or object.t == 3.1 or
+			object.t == 3.2 or object.t == 3 or
+			object.t == 1.9 then
 			object.t = -object.t
 		end
 
@@ -1052,7 +1057,9 @@ function show_network()
 			cell_border = black
 			if tiles[i].t == course.tr_attr then  -- track attribute
 				cell_fill = white
-			elseif tiles[i].t == -2.6 then  -- tree
+			elseif tiles[i].t == -2.6  or tiles[i].t == -3.2 or
+			tiles[i].t == -3.1 or tiles[i].t == -3
+			or tiles[i].t == 1.9 then  -- tree, cactus
 				cell_fill = green
 			elseif tiles[i].t == 1.2 then  -- item box
 				cell_fill = blue
@@ -1478,7 +1485,7 @@ function remove_non_improvers()
 			].improvement_age = old_pop.species[s].improvement_age + 1
 		end
 
-		if old_pop.species[s].improvement_age < 4 or
+		if old_pop.species[s].improvement_age < 15 or
 			old_pop.species[s].fitness >= global_max_fitness then
 			table.insert(not_killed_off, old_pop.species[s])
 		end
