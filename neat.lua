@@ -240,7 +240,7 @@ function initialize_things()
 	weight_perturbation     = 2
 	-- must be at least one so all genomes have at least one gene
 	mutate_structure_chance = 1
-	add_node_chance         = 0.4
+	add_node_chance         = 0.66
 
 	clear_controller()
 
@@ -652,6 +652,7 @@ end
 
 function speciate(baby_genome)
 	local matched_a_species = false
+	local s = 0
 	for i = 1, #pop.species do
 		local genes1 = pop.species[i].genomes[1].genes
 		local genes2 = baby_genome.genes
@@ -662,6 +663,8 @@ function speciate(baby_genome)
 		if cd < compatibility_threshold then
 			table.insert(pop.species[i].genomes, baby_genome)
 			matched_a_species = true
+			s = i
+			break
 		end
 	end
 
@@ -670,6 +673,7 @@ function speciate(baby_genome)
 		table.insert(unique_species.genomes, baby_genome)
 		table.insert(pop.species, unique_species)
 	end
+	return s
 end
 
 function compatibility_distance(genes1, genes2)
@@ -1485,7 +1489,7 @@ function remove_non_improvers()
 			].improvement_age = old_pop.species[s].improvement_age + 1
 		end
 
-		if old_pop.species[s].improvement_age < 15 or
+		if old_pop.species[s].improvement_age < 30 or
 			old_pop.species[s].fitness >= global_max_fitness then
 			table.insert(not_killed_off, old_pop.species[s])
 		end
@@ -1570,9 +1574,13 @@ end
 function make_babies()
 	pop.species = {}
 
+	-- put the best genome in the population without mutation
+	speciate(global_best_genome)
+
 	for s = 1, #old_pop.species do
 		local chosen_best_yet = false
 		local species = old_pop.species[s]
+
 		while species.spawn_number >= 1 and current_pop_size() < population do
 
 			if not chosen_best_yet then
@@ -1625,7 +1633,7 @@ function make_babies()
 
 	-- make sure the population is full
 	-- TODO force this to choose from genomes that have a fitness above zero
-	local i = 1
+	local i = 0
 	while current_pop_size() < population do
 		i = i + 1
 		local k = 10
@@ -1633,7 +1641,7 @@ function make_babies()
 		local r_genome
 		local winner = new_genome()
 		winner.fitness = 0
-		for i = 1, k do
+		for j = 1, k do
 			r_species = old_pop.species[math.random(1, #old_pop.species)]
 			r_genome = copy_genome(
 				r_species.genomes[math.random(1, #r_species.genomes)]
@@ -1646,7 +1654,7 @@ function make_babies()
 		winner.received_trial = false
 		speciate(winner)
 	end
-	if i > 1 then pn("fill: "..i) end
+	if i > 0 then pn("fill: "..i) end
 end
 
 function new_generation()
